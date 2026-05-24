@@ -11,6 +11,7 @@
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "docx": "^8.5.0",
+    "dotenv": "^17.4.2",
     "express": "^4.22.2",
     "file-type": "^16.5.4",
     "fs-extra": "^11.3.5",

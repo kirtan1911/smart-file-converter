@@ -1,155 +1,385 @@
 /**
- * server.js — Smart File Converter
- * Production Ready Express Server
+ * server.js
+ * Smart File Converter
+ * Fully Production Optimized
  */
 
+'use strict';
+
 const express = require('express');
+
 const cors = require('cors');
+
 const helmet = require('helmet');
+
 const compression = require('compression');
 
 const path = require('path');
+
 const fs = require('fs-extra');
 
-const uploadRouter = require('./routes/upload');
-const convertRouter = require('./routes/convert');
-const downloadRouter = require('./routes/download');
+require('dotenv').config();
 
-const { cleanupOldFiles } = require('./utils/cleanup');
+// ═══════════════════════════════════════
+// ROUTES
+// ═══════════════════════════════════════
+
+const uploadRouter =
+  require('./routes/upload');
+
+const convertRouter =
+  require('./routes/convert');
+
+const downloadRouter =
+  require('./routes/download');
+
+const {
+  cleanupOldFiles
+} = require('./utils/cleanup');
+
+// ═══════════════════════════════════════
+// APP
+// ═══════════════════════════════════════
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// ─────────────────────────────────────────────
-// Ensure Required Directories Exist
-// ─────────────────────────────────────────────
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const CONVERTED_DIR = path.join(__dirname, 'converted');
-const PUBLIC_DIR = path.join(__dirname, 'public');
+const PORT =
+  process.env.PORT || 3000;
 
-fs.ensureDirSync(UPLOADS_DIR);
-fs.ensureDirSync(CONVERTED_DIR);
+// ═══════════════════════════════════════
+// PATHS
+// ═══════════════════════════════════════
+
+const ROOT_DIR = __dirname;
+
+const PUBLIC_DIR =
+  path.join(ROOT_DIR, 'public');
+
+const UPLOADS_DIR =
+  path.join(ROOT_DIR, 'uploads');
+
+const CONVERTED_DIR =
+  path.join(ROOT_DIR, 'converted');
+
+// ensure folders exist
 fs.ensureDirSync(PUBLIC_DIR);
 
-// ─────────────────────────────────────────────
-// Security Middleware
-// ─────────────────────────────────────────────
-app.use(helmet());
-app.use(cors());
+fs.ensureDirSync(UPLOADS_DIR);
+
+fs.ensureDirSync(CONVERTED_DIR);
+
+// ═══════════════════════════════════════
+// TRUST PROXY
+// Required for Render / Railway / Nginx
+// ═══════════════════════════════════════
+
+app.set('trust proxy', 1);
+
+// ═══════════════════════════════════════
+// SECURITY
+// ═══════════════════════════════════════
+
+app.use(
+  helmet({
+
+    crossOriginResourcePolicy: false,
+
+    contentSecurityPolicy: false
+
+  })
+);
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true
+  })
+);
+
 app.use(compression());
 
-// ─────────────────────────────────────────────
-// Body Parser
-// ─────────────────────────────────────────────
-app.use(express.json({ limit: '500mb' }));
-app.use(express.urlencoded({
-  extended: true,
-  limit: '500mb'
-}));
+// ═══════════════════════════════════════
+// BODY PARSER
+// ═══════════════════════════════════════
 
-// ─────────────────────────────────────────────
-// STATIC FILES (IMPORTANT FIX)
-// ─────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+  express.json({
+    limit: '500mb'
+  })
+);
 
-// Optional direct static mappings
-app.use('/css', express.static(path.join(__dirname, 'public/css')));
-app.use('/js', express.static(path.join(__dirname, 'public/js')));
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '500mb'
+  })
+);
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════
+// STATIC FILES
+// ═══════════════════════════════════════
+
+app.use(
+  express.static(PUBLIC_DIR, {
+
+    maxAge: '1d',
+
+    etag: true
+
+  })
+);
+
+// optional direct mappings
+app.use(
+  '/css',
+  express.static(
+    path.join(PUBLIC_DIR, 'css')
+  )
+);
+
+app.use(
+  '/js',
+  express.static(
+    path.join(PUBLIC_DIR, 'js')
+  )
+);
+
+app.use(
+  '/images',
+  express.static(
+    path.join(PUBLIC_DIR, 'images')
+  )
+);
+
+// ═══════════════════════════════════════
 // API ROUTES
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════
+
 app.use('/upload', uploadRouter);
+
 app.use('/convert', convertRouter);
+
 app.use('/download', downloadRouter);
 
-// ─────────────────────────────────────────────
-// Health Check
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════
+// HEALTH CHECK
+// ═══════════════════════════════════════
+
 app.get('/health', (req, res) => {
-  res.status(200).json({
+
+  return res.status(200).json({
+
     success: true,
+
     status: 'ok',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+
+    uptime:
+      process.uptime(),
+
+    timestamp:
+      new Date().toISOString(),
+
+    memory: process.memoryUsage()
+
   });
+
 });
 
-// ─────────────────────────────────────────────
-// Root Route
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════
+// ROOT ROUTE
+// ═══════════════════════════════════════
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+
+  return res.sendFile(
+    path.join(PUBLIC_DIR, 'index.html')
+  );
+
 });
 
-// ─────────────────────────────────────────────
-// SPA Fallback
-// ─────────────────────────────────────────────
-app.get('*', (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
-});
+// ═══════════════════════════════════════
+// 404 API HANDLER
+// ═══════════════════════════════════════
 
-// ─────────────────────────────────────────────
-// Global Error Handler
-// ─────────────────────────────────────────────
-app.use((err, req, res, next) => {
+app.use('/api', (req, res) => {
 
-  console.error('[Server Error]', err);
+  return res.status(404).json({
 
-  res.status(500).json({
     success: false,
-    error: err.message || 'Internal Server Error'
+
+    error: 'API route not found.'
+
   });
 
 });
 
-// ─────────────────────────────────────────────
-// Start Server
-// ─────────────────────────────────────────────
-app.listen(PORT, async () => {
+// ═══════════════════════════════════════
+// SPA FALLBACK
+// Only for frontend routes
+// ═══════════════════════════════════════
 
-  console.log('\n═══════════════════════════════════════');
-  console.log('🚀 Smart File Converter Started');
-  console.log(`🌍 Running on Port: ${PORT}`);
-  console.log(`🔗 URL: http://localhost:${PORT}`);
-  console.log('═══════════════════════════════════════\n');
+app.get('*', (req, res) => {
 
-  try {
+  // avoid interfering with APIs
+  if (
+    req.path.startsWith('/upload') ||
+    req.path.startsWith('/convert') ||
+    req.path.startsWith('/download')
+  ) {
 
-    // Cleanup old temp files
-    await cleanupOldFiles(UPLOADS_DIR, CONVERTED_DIR);
+    return res.status(404).json({
 
-    console.log('🧹 Old temporary files cleaned.');
+      success: false,
 
-  } catch (cleanupError) {
+      error: 'Route not found.'
 
-    console.error('Cleanup Error:', cleanupError.message);
+    });
 
   }
 
-});
-
-// ─────────────────────────────────────────────
-// Graceful Shutdown
-// ─────────────────────────────────────────────
-process.on('SIGTERM', () => {
-
-  console.log('\n🛑 Server shutting down gracefully...');
-  process.exit(0);
+  return res.sendFile(
+    path.join(PUBLIC_DIR, 'index.html')
+  );
 
 });
 
-// ─────────────────────────────────────────────
-// Unhandled Promise Rejections
-// ─────────────────────────────────────────────
-process.on('unhandledRejection', (reason) => {
+// ═══════════════════════════════════════
+// GLOBAL ERROR HANDLER
+// ═══════════════════════════════════════
 
-  console.error('Unhandled Promise Rejection:', reason);
+app.use((err, req, res, next) => {
+
+  console.error(
+    '[Server Error]',
+    new Date().toISOString(),
+    err
+  );
+
+  return res.status(500).json({
+
+    success: false,
+
+    error:
+      process.env.NODE_ENV ===
+      'production'
+        ? 'Internal server error.'
+        : err.message
+
+  });
 
 });
 
-// ─────────────────────────────────────────────
-// Export App
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════
+// START SERVER
+// ═══════════════════════════════════════
+
+const server =
+  app.listen(PORT, async () => {
+
+    console.log(
+      '\n═══════════════════════════════════════'
+    );
+
+    console.log(
+      '🚀 Smart File Converter Started'
+    );
+
+    console.log(
+      `🌍 Port: ${PORT}`
+    );
+
+    console.log(
+      `🔗 http://localhost:${PORT}`
+    );
+
+    console.log(
+      '═══════════════════════════════════════\n'
+    );
+
+    try {
+
+      await cleanupOldFiles(
+        UPLOADS_DIR,
+        CONVERTED_DIR
+      );
+
+      console.log(
+        '🧹 Temporary files cleaned.'
+      );
+
+    } catch (cleanupErr) {
+
+      console.error(
+        '[Cleanup Error]',
+        cleanupErr.message
+      );
+
+    }
+
+  });
+
+// ═══════════════════════════════════════
+// GRACEFUL SHUTDOWN
+// ═══════════════════════════════════════
+
+function shutdown(signal) {
+
+  console.log(
+    `\n🛑 ${signal} received. Shutting down...`
+  );
+
+  server.close(() => {
+
+    console.log(
+      '✅ Server closed gracefully.'
+    );
+
+    process.exit(0);
+
+  });
+
+}
+
+process.on(
+  'SIGTERM',
+  () => shutdown('SIGTERM')
+);
+
+process.on(
+  'SIGINT',
+  () => shutdown('SIGINT')
+);
+
+// ═══════════════════════════════════════
+// UNHANDLED ERRORS
+// ═══════════════════════════════════════
+
+process.on(
+  'unhandledRejection',
+  reason => {
+
+    console.error(
+      '[Unhandled Rejection]',
+      reason
+    );
+
+  }
+);
+
+process.on(
+  'uncaughtException',
+  err => {
+
+    console.error(
+      '[Uncaught Exception]',
+      err
+    );
+
+  }
+);
+
+// ═══════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════
+
 module.exports = app;
