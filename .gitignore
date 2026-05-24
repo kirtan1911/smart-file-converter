@@ -1,8 +1,8 @@
 node_modules
 .env
 
-uploads/*
-converted/*
+uploads
+converted
 
 !uploads/.gitkeep
 !converted/.gitkeep

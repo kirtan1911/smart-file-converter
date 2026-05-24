@@ -1,10 +1,15 @@
 /**
  * server.js
  * Smart File Converter
- * Fully Production Optimized
+ * Fully Production Ready
+ * Optimized for Render / Railway / Docker
  */
 
 'use strict';
+
+// ═══════════════════════════════════════
+// IMPORTS
+// ═══════════════════════════════════════
 
 const express = require('express');
 
@@ -61,12 +66,33 @@ const UPLOADS_DIR =
 const CONVERTED_DIR =
   path.join(ROOT_DIR, 'converted');
 
-// ensure folders exist
+// ═══════════════════════════════════════
+// ENSURE DIRECTORIES EXIST
+// ═══════════════════════════════════════
+
 fs.ensureDirSync(PUBLIC_DIR);
 
 fs.ensureDirSync(UPLOADS_DIR);
 
 fs.ensureDirSync(CONVERTED_DIR);
+
+// create .gitkeep automatically if missing
+const ensureGitkeep = async dir => {
+
+  const gitkeep =
+    path.join(dir, '.gitkeep');
+
+  if (!(await fs.pathExists(gitkeep))) {
+
+    await fs.writeFile(gitkeep, '');
+
+  }
+
+};
+
+ensureGitkeep(UPLOADS_DIR);
+
+ensureGitkeep(CONVERTED_DIR);
 
 // ═══════════════════════════════════════
 // TRUST PROXY
@@ -74,6 +100,25 @@ fs.ensureDirSync(CONVERTED_DIR);
 // ═══════════════════════════════════════
 
 app.set('trust proxy', 1);
+
+// ═══════════════════════════════════════
+// REQUEST TIMEOUT FIX
+// Prevent Render timeout issues
+// ═══════════════════════════════════════
+
+app.use((req, res, next) => {
+
+  req.setTimeout(
+    10 * 60 * 1000
+  );
+
+  res.setTimeout(
+    10 * 60 * 1000
+  );
+
+  next();
+
+});
 
 // ═══════════════════════════════════════
 // SECURITY
@@ -91,8 +136,11 @@ app.use(
 
 app.use(
   cors({
+
     origin: true,
+
     credentials: true
+
   })
 );
 
@@ -104,14 +152,19 @@ app.use(compression());
 
 app.use(
   express.json({
-    limit: '500mb'
+
+    limit: '100mb'
+
   })
 );
 
 app.use(
   express.urlencoded({
+
     extended: true,
-    limit: '500mb'
+
+    limit: '100mb'
+
   })
 );
 
@@ -129,7 +182,6 @@ app.use(
   })
 );
 
-// optional direct mappings
 app.use(
   '/css',
   express.static(
@@ -151,37 +203,89 @@ app.use(
   )
 );
 
+// uploads access
+app.use(
+  '/uploads',
+  express.static(UPLOADS_DIR)
+);
+
+// converted access
+app.use(
+  '/converted',
+  express.static(CONVERTED_DIR)
+);
+
 // ═══════════════════════════════════════
 // API ROUTES
 // ═══════════════════════════════════════
 
-app.use('/upload', uploadRouter);
+app.use(
+  '/upload',
+  uploadRouter
+);
 
-app.use('/convert', convertRouter);
+app.use(
+  '/convert',
+  convertRouter
+);
 
-app.use('/download', downloadRouter);
+app.use(
+  '/download',
+  downloadRouter
+);
 
 // ═══════════════════════════════════════
 // HEALTH CHECK
 // ═══════════════════════════════════════
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
 
-  return res.status(200).json({
+  try {
 
-    success: true,
+    const uploadsExists =
+      await fs.pathExists(
+        UPLOADS_DIR
+      );
 
-    status: 'ok',
+    const convertedExists =
+      await fs.pathExists(
+        CONVERTED_DIR
+      );
 
-    uptime:
-      process.uptime(),
+    return res.status(200).json({
 
-    timestamp:
-      new Date().toISOString(),
+      success: true,
 
-    memory: process.memoryUsage()
+      status: 'ok',
 
-  });
+      uploadsDir:
+        uploadsExists,
+
+      convertedDir:
+        convertedExists,
+
+      uptime:
+        process.uptime(),
+
+      timestamp:
+        new Date().toISOString(),
+
+      memory:
+        process.memoryUsage()
+
+    });
+
+  } catch (err) {
+
+    return res.status(500).json({
+
+      success: false,
+
+      error: err.message
+
+    });
+
+  }
 
 });
 
@@ -192,7 +296,10 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
 
   return res.sendFile(
-    path.join(PUBLIC_DIR, 'index.html')
+    path.join(
+      PUBLIC_DIR,
+      'index.html'
+    )
   );
 
 });
@@ -207,7 +314,8 @@ app.use('/api', (req, res) => {
 
     success: false,
 
-    error: 'API route not found.'
+    error:
+      'API route not found.'
 
   });
 
@@ -215,16 +323,18 @@ app.use('/api', (req, res) => {
 
 // ═══════════════════════════════════════
 // SPA FALLBACK
-// Only for frontend routes
 // ═══════════════════════════════════════
 
 app.get('*', (req, res) => {
 
-  // avoid interfering with APIs
   if (
+
     req.path.startsWith('/upload') ||
+
     req.path.startsWith('/convert') ||
+
     req.path.startsWith('/download')
+
   ) {
 
     return res.status(404).json({
@@ -238,7 +348,10 @@ app.get('*', (req, res) => {
   }
 
   return res.sendFile(
-    path.join(PUBLIC_DIR, 'index.html')
+    path.join(
+      PUBLIC_DIR,
+      'index.html'
+    )
   );
 
 });
@@ -250,10 +363,45 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
 
   console.error(
-    '[Server Error]',
+    '\n[SERVER ERROR]',
     new Date().toISOString(),
+    '\n',
     err
   );
+
+  // multer file size
+  if (
+    err.code ===
+    'LIMIT_FILE_SIZE'
+  ) {
+
+    return res.status(400).json({
+
+      success: false,
+
+      error:
+        'File too large. Maximum allowed size is 100MB.'
+
+    });
+
+  }
+
+  // too many files
+  if (
+    err.code ===
+    'LIMIT_FILE_COUNT'
+  ) {
+
+    return res.status(400).json({
+
+      success: false,
+
+      error:
+        'Maximum 100 files allowed.'
+
+    });
+
+  }
 
   return res.status(500).json({
 
@@ -289,6 +437,14 @@ const server =
     );
 
     console.log(
+      `📂 Uploads: ${UPLOADS_DIR}`
+    );
+
+    console.log(
+      `📂 Converted: ${CONVERTED_DIR}`
+    );
+
+    console.log(
       `🔗 http://localhost:${PORT}`
     );
 
@@ -304,7 +460,7 @@ const server =
       );
 
       console.log(
-        '🧹 Temporary files cleaned.'
+        '🧹 Old temp files cleaned.'
       );
 
     } catch (cleanupErr) {

@@ -54,7 +54,7 @@ const storage = multer.diskStorage({
 
   destination(req, file, cb) {
 
-    cb(null, UPLOADS_DIR);
+    cb(null, 'uploads/');
 
   },
 
