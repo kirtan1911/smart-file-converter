@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+
+    "postinstall": "npm rebuild sharp"
   },
   "dependencies": {
     "compression": "^1.7.4",
@@ -28,14 +30,17 @@
     "nodemon": "^3.0.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "keywords": [
     "file-converter",
     "pdf",
     "docx",
     "image",
-    "nodejs"
+    "nodejs",
+    "render",
+    "libreoffice",
+    "sharp"
   ],
   "author": "Smart File Converter",
   "license": "MIT"

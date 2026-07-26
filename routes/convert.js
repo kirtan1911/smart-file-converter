@@ -1,6 +1,22 @@
 /**
  * routes/convert.js
  * Production Optimized Version
+ *
+ * [RENDER FIX #2 — CRITICAL — PART 2]
+ * ────────────────────────────────────────────────────────────
+ * BEFORE (broken on Render):
+ *   UPLOADS_DIR   = path.join(__dirname, '..', 'uploads')   → /app/uploads
+ *   CONVERTED_DIR = path.join(__dirname, '..', 'converted') → /app/converted
+ *
+ * WHY IT FAILS ON RENDER:
+ *   1. UPLOADS_DIR mismatch: upload.js writes to /tmp/sfc_uploads but
+ *      convert.js was looking in /app/uploads → file not found → 410 error
+ *   2. CONVERTED_DIR: /app/converted is read-only on Render → EACCES
+ *
+ * THE FIX:
+ *   Use tempDir.js for BOTH directories. This ensures upload.js and
+ *   convert.js use the SAME /tmp/sfc_uploads path. The converted output
+ *   goes to /tmp/sfc_converted which download.js can also read.
  */
 
 const express = require('express');
@@ -31,18 +47,24 @@ const {
 } = require('../utils/cleanup');
 
 // ═══════════════════════════════════════
-// PATHS
+// PATHS — [RENDER FIX] Use writable /tmp
 // ═══════════════════════════════════════
 
-const UPLOADS_DIR =
-  path.join(__dirname, '..', 'uploads');
+// [RENDER FIX] Import both dirs from tempDir.js.
+// UPLOADS_DIR   = where upload.js saved the file (→ /tmp/sfc_uploads)
+// CONVERTED_DIR = where we write output        (→ /tmp/sfc_converted)
+// Both must be the SAME between upload, convert, and download routes.
+const {
+  UPLOADS_DIR,
+  CONVERTED_DIR
+} = require('../utils/tempDir');
 
-const CONVERTED_DIR =
-  path.join(__dirname, '..', 'converted');
-
-// Ensure folders exist
+// Belt-and-suspenders: ensure dirs exist even if server.js restart was skipped
 fs.ensureDirSync(UPLOADS_DIR);
 fs.ensureDirSync(CONVERTED_DIR);
+
+console.log(`[Convert Route] UPLOADS_DIR   = ${UPLOADS_DIR}`);
+console.log(`[Convert Route] CONVERTED_DIR = ${CONVERTED_DIR}`);
 
 // ═══════════════════════════════════════
 // LIMITS

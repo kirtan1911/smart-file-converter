@@ -1,6 +1,43 @@
+# ── Node dependencies ─────────────────────────────────────────
+# WHY: node_modules is rebuilt inside the container via npm ci.
+# Copying it from Windows would include win32 binaries for sharp
+# and other native modules that DON'T work on Linux.
 node_modules
-npm-debug.log
+
+# ── Git history ───────────────────────────────────────────────
+# Not needed at runtime; saves ~10MB from build context.
 .git
 .gitignore
+
+# ── Temp / upload directories ─────────────────────────────────
+# WHY: These contain local dev temp files.
+# On Render, files go to /tmp (os.tmpdir()). These local dirs
+# must NOT be copied into the container or they'll shadow /app/uploads
+# and potentially expose old files.
 uploads
 converted
+{public
+
+# ── Environment files ─────────────────────────────────────────
+# WHY: .env contains secrets (API keys, etc.).
+# Environment variables are set via Render dashboard or render.yaml,
+# not copied from the local filesystem.
+.env
+.env.local
+.env.*.local
+
+# ── Logs & debug ─────────────────────────────────────────────
+npm-debug.log
+*.log
+
+# ── OS artifacts ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE files ─────────────────────────────────────────────────
+.vscode
+.idea
+
+# ── Documentation (optional, saves space) ─────────────────────
+# Uncomment if README is large and not needed at runtime:
+# README.md

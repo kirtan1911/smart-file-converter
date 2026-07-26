@@ -1,0 +1,114 @@
+# ============================================================
+# render.yaml — Render.com Infrastructure-as-Code
+# Docs: https://render.com/docs/render-yaml
+#
+# Commit this file to your repo root.
+# Render detects it automatically on first deploy.
+# ============================================================
+
+services:
+  - type: web
+    name: smart-file-converter
+
+    # ── [RENDER FIX #1] Runtime: docker (NOT node) ─────────────
+    #
+    # WHY docker, not node:
+    #   Render's "node" runtime is a shared, pre-baked server environment.
+    #   It does NOT allow you to run apt-get or install system packages.
+    #   LibreOffice (soffice binary) CANNOT be installed in the node runtime.
+    #
+    #   The Docker runtime gives you full control:
+    #     - Our Dockerfile runs apt-get install libreoffice during build
+    #     - npm rebuild sharp runs for the correct Linux platform
+    #     - /tmp is writable for our uploads/converted temp files
+    #
+    #   There is NO other way to get LibreOffice on Render. This setting
+    #   is the root cause of "docx-to-pdf works locally but fails on Render".
+    runtime: docker
+
+    # Path to Dockerfile (relative to repo root)
+    dockerfilePath: ./Dockerfile
+
+    # Docker build context — the directory that COPY . . copies from
+    dockerContext: .
+
+    # ── Instance Type ───────────────────────────────────────────
+    #
+    # WHY NOT free:
+    #   Free plan: 512MB RAM, containers SPIN DOWN after 15 min idle.
+    #   LibreOffice alone uses ~200MB RAM when running a conversion.
+    #   sharp image processing can spike to 300MB for large images.
+    #   Combined with Node.js base (~80MB), free plan WILL OOM-kill
+    #   your conversion with no error — just a silent 502/504.
+    #
+    #   Free plan also has NO persistent uptime, so the first request
+    #   after idle wakes the container (cold start: 30-60s with LibreOffice).
+    #
+    # Recommended: start with "starter" ($7/mo, 512MB, no spin-down).
+    # Upgrade to "standard" ($25/mo, 2GB) for heavy usage.
+    plan: starter
+
+    # ── Region ─────────────────────────────────────────────────
+    # Choose the region closest to your users.
+    # Options: oregon | frankfurt | singapore | ohio
+    region: oregon
+
+    # ── Environment Variables ──────────────────────────────────
+    envVars:
+      # [RENDER FIX #3] NODE_ENV must be "production"
+      #   - Enables proper error handling (stack traces hidden from clients,
+      #     shown in Render logs via console.error)
+      #   - Some libraries (express, sharp) optimize for production mode
+      #   - npm ci --omit=dev already handled dev dependency exclusion
+      - key: NODE_ENV
+        value: production
+
+      # [RENDER FIX #3] DO NOT hardcode PORT here.
+      #   Render automatically injects $PORT into your container
+      #   (usually 10000 on Render). Our server.js reads:
+      #     process.env.PORT || 3000
+      #   Never set PORT manually here — Render's load balancer
+      #   will route to whatever $PORT it assigns.
+
+      # LibreOffice binary path
+      # In the Debian Docker image, soffice installs to /usr/bin/soffice.
+      # libreoffice-convert auto-detects this, but being explicit prevents
+      # issues if the path differs between LibreOffice versions.
+      - key: SOFFICE_PATH
+        value: /usr/bin/soffice
+
+      # Temp directory base path
+      # Our tempDir.js reads TEMP_DIR env var → os.tmpdir() fallback.
+      # On Render, /tmp is writable. This makes it explicit.
+      # If you add a persistent disk (see disk section below),
+      # change this to the disk mountPath (e.g., /data).
+      - key: TEMP_DIR
+        value: /tmp
+
+      # Maximum file size in MB (informational — enforced in code)
+      - key: MAX_FILE_SIZE_MB
+        value: "100"
+
+    # ── Health Check ────────────────────────────────────────────
+    # Render pings GET /health every 30 seconds.
+    # Returns: { status: "ok", libreOffice: "...", nodeVersion: "..." }
+    # If non-2xx, Render marks instance unhealthy and may restart.
+    # You can view health check history in Render dashboard → Events.
+    healthCheckPath: /health
+
+    # ── Persistent Disk (optional) ──────────────────────────────
+    #
+    # WHY we don't use a persistent disk by default:
+    #   We use /tmp for uploads/converted which is ephemeral and
+    #   auto-cleaned. Files are deleted after 15min TTL (see cleanup.js).
+    #   This is intentional for a stateless file converter.
+    #
+    # IF you want to store conversion history or allow re-downloads:
+    #   1. Uncomment the disk section below
+    #   2. Change TEMP_DIR env var to /data
+    #   3. Update tempDir.js to use TEMP_DIR=/data
+    #
+    # disk:
+    #   name: converter-data
+    #   mountPath: /data
+    #   sizeGB: 1

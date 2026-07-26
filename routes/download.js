@@ -1,6 +1,22 @@
 /**
  * routes/download.js
  * Production Optimized Download Route
+ *
+ * [RENDER FIX #2 — CRITICAL — PART 3]
+ * ───────────────────────────────────────────────────────────
+ * BEFORE (broken on Render):
+ *   CONVERTED_DIR = path.join(__dirname, '..', 'converted') → /app/converted
+ *
+ * WHY IT FAILS:
+ *   convert.js writes the output file to /tmp/sfc_converted (via tempDir.js).
+ *   download.js was looking in /app/converted which is:
+ *     a) A DIFFERENT directory than where the file was written
+ *     b) Read-only on Render → even path check throws EACCES
+ *   Result: 404 "File expired or not found" on every download attempt.
+ *
+ * THE FIX:
+ *   All three routes (upload / convert / download) must share the
+ *   SAME base paths from tempDir.js.
  */
 
 const express = require('express');
@@ -12,14 +28,19 @@ const path = require('path');
 const fs = require('fs-extra');
 
 // ═══════════════════════════════════════
-// PATHS
+// PATHS — [RENDER FIX] Use writable /tmp
 // ═══════════════════════════════════════
 
-const CONVERTED_DIR =
-  path.join(__dirname, '..', 'converted');
+// [RENDER FIX] Must match the CONVERTED_DIR used in convert.js.
+// Both import from tempDir.js → guaranteed to be the same /tmp path.
+const {
+  CONVERTED_DIR
+} = require('../utils/tempDir');
 
-// Ensure folder exists
+// Ensure folder exists (belt-and-suspenders)
 fs.ensureDirSync(CONVERTED_DIR);
+
+console.log(`[Download Route] CONVERTED_DIR = ${CONVERTED_DIR}`);
 
 // ═══════════════════════════════════════
 // ROUTE

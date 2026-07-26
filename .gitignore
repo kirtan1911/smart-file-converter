@@ -1,8 +1,10 @@
-node_modules
+node_modules/
+npm-debug.log
 .env
-
-uploads
-converted
-
+uploads/*
 !uploads/.gitkeep
+converted/*
 !converted/.gitkeep
+*.log
+.DS_Store
+Thumbs.db

@@ -1,6 +1,26 @@
 /**
  * routes/upload.js
  * Enterprise Production Upload Route
+ *
+ * [RENDER FIX #2 — CRITICAL]
+ * ─────────────────────────────────────────────────────────────
+ * BEFORE (broken on Render):
+ *   UPLOADS_DIR = path.join(__dirname, '..', 'uploads')  → /app/uploads
+ *   multer destination: cb(null, 'uploads/')             → relative path
+ *
+ * WHY IT FAILS ON RENDER:
+ *   Render's Docker containers mount the /app directory from the image
+ *   layer, which is READ-ONLY at runtime. Any attempt to write to
+ *   /app/uploads throws: EACCES: permission denied
+ *   or: EROFS: read-only file system
+ *
+ * THE FIX:
+ *   Import UPLOADS_DIR from utils/tempDir.js which resolves to:
+ *     → /tmp/sfc_uploads  (on Linux / Render)
+ *     → C:\Users\...\AppData\Local\Temp\sfc_uploads  (on Windows dev)
+ *   /tmp is ALWAYS writable on Docker containers.
+ *
+ * LOCAL IMPACT: Zero. os.tmpdir() works fine on Windows too.
  */
 
 const express = require('express');
@@ -29,13 +49,21 @@ const {
 } = require('../utils/cleanup');
 
 // ═══════════════════════════════════════
-// PATHS
+// PATHS — [RENDER FIX] Use writable /tmp
 // ═══════════════════════════════════════
 
-const UPLOADS_DIR =
-  path.join(__dirname, '..', 'uploads');
+// [RENDER FIX] Import from tempDir.js instead of hardcoding a relative path.
+// tempDir.js uses os.tmpdir() which returns /tmp on Linux (Render/Docker)
+// and a writable temp path on Windows (local dev). Both are always writable.
+const {
+  UPLOADS_DIR
+} = require('../utils/tempDir');
 
+// ensureDirSync is idempotent — safe to call here even though server.js
+// already called ensureTempDirs() at startup. Belt-and-suspenders.
 fs.ensureDirSync(UPLOADS_DIR);
+
+console.log(`[Upload Route] UPLOADS_DIR = ${UPLOADS_DIR}`);
 
 // ═══════════════════════════════════════
 // LIMITS
@@ -54,7 +82,14 @@ const storage = multer.diskStorage({
 
   destination(req, file, cb) {
 
-    cb(null, 'uploads/');
+    // [RENDER FIX] Was: cb(null, 'uploads/') — a hardcoded relative path.
+    // On Render, the working dir /app is read-only. Writing to 'uploads/'
+    // resolves to /app/uploads which throws EACCES / EROFS.
+    //
+    // FIX: Use UPLOADS_DIR from tempDir.js → /tmp/sfc_uploads on Linux.
+    // This is the EXACT same directory the convert route reads from,
+    // so the file will be found when the frontend calls /convert.
+    cb(null, UPLOADS_DIR);
 
   },
 
