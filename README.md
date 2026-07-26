@@ -206,6 +206,7 @@ Stream the converted file for download.
    - **Start Command:** `npm start`
    - **Environment:** Node
 5. Click **Deploy**
+6. URL: https://smart-file-converter-45kw.onrender.com/
 
 > ⚠️ Note: Free Render instances sleep after 15min inactivity.
 
