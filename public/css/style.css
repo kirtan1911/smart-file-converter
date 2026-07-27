@@ -190,8 +190,8 @@ select { cursor: pointer; }
 }
 
 .theme-toggle {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--glass-border);
   background: var(--bg-card);
@@ -204,6 +204,7 @@ select { cursor: pointer; }
   align-items: center;
   justify-content: center;
   font-size: 15px;
+  /* 44px meets Apple/Google accessibility minimum touch target */
 }
 .theme-toggle:hover {
   color: var(--accent-primary);
@@ -218,6 +219,7 @@ select { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 6px;
+  /* Mobile: this becomes a scrollable row — see @media (max-width: 767px) */
 }
 .nav-pill-link {
   display: inline-flex;
@@ -729,9 +731,14 @@ select { cursor: pointer; }
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; opacity: 0;
   transition: opacity var(--transition), transform var(--transition);
+  /* Touch: expanded tap area via padding trick on touch devices */
 }
 .file-card:hover .file-card-remove { opacity: 1; }
 .file-card-remove:hover { transform: scale(1.15); }
+/* On touch devices, always show the remove button (no hover) */
+@media (hover: none) {
+  .file-card-remove { opacity: 1; }
+}
 .file-card-order {
   position: absolute; top: 5px; left: 5px;
   width: 20px; height: 20px;
@@ -820,14 +827,19 @@ select { cursor: pointer; }
 .custom-name-input {
   flex: 1; background: transparent; border: none; outline: none;
   color: var(--text-primary); font-family: var(--font-body);
-  font-size: 0.9rem; font-weight: 500; min-width: 0;
+  /* font-size >= 16px prevents iOS auto-zoom on focus */
+  font-size: 16px; font-weight: 500; min-width: 0;
 }
 .custom-name-input::placeholder { color: var(--text-muted); font-weight: 400; }
 .custom-name-clear {
   background: none; border: none; color: var(--text-muted);
-  cursor: pointer; padding: 0; font-size: 0.9rem;
+  cursor: pointer;
+  /* 44px minimum tap area */
+  padding: 10px 6px;
+  font-size: 0.9rem;
   transition: color var(--transition);
   display: flex; align-items: center; flex-shrink: 0;
+  min-width: 44px; min-height: 44px; justify-content: center;
 }
 .custom-name-clear:hover { color: var(--accent-red); }
 .custom-name-hint { font-size: 0.75rem; color: var(--text-muted); margin: 0.6rem 0 0; line-height: 1.5; }
@@ -1104,9 +1116,12 @@ select { cursor: pointer; }
 .cmp-change-link:hover { color: var(--accent-primary); }
 .compress-file-clear {
   background: none; border: none; color: var(--text-muted);
-  cursor: pointer; font-size: 1.1rem; padding: 4px; border-radius: 50%;
+  cursor: pointer; font-size: 1.1rem; border-radius: 50%;
+  /* 44x44 minimum tap target */
+  padding: 10px;
+  min-width: 44px; min-height: 44px;
   transition: color var(--transition), background var(--transition);
-  display: flex; align-items: center; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .compress-file-clear:hover { color: var(--accent-red); background: rgba(255,92,92,0.1); }
 
@@ -1116,11 +1131,14 @@ select { cursor: pointer; }
   border: 1px solid rgba(124,111,240,0.18);
   color: var(--accent-violet);
   padding: 0.3rem 0.8rem;
+  /* minimum 44px height for touch accessibility */
+  min-height: 36px;
   border-radius: 999px;
   font-size: 0.77rem; font-weight: 700;
   cursor: pointer;
   transition: all var(--transition);
   user-select: none;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .compress-chip:hover { background: rgba(124,111,240,0.18); border-color: var(--accent-violet); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,111,240,0.2); }
 .compress-chip.active {
@@ -1143,7 +1161,8 @@ select { cursor: pointer; }
 .compress-custom-input {
   flex: 1; min-width: 0; background: transparent; border: none; outline: none;
   color: var(--text-primary); font-family: var(--font-body);
-  font-size: 0.92rem; font-weight: 600; text-align: right;
+  /* font-size >= 16px prevents iOS auto-zoom on focus */
+  font-size: 16px; font-weight: 600; text-align: right;
 }
 .compress-custom-input::placeholder { color: var(--text-muted); font-weight: 400; }
 .compress-unit-select {
@@ -1151,12 +1170,15 @@ select { cursor: pointer; }
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 0.78rem; font-weight: 600;
+  /* font-size >= 16px prevents iOS auto-zoom on focus */
+  font-size: 16px; font-weight: 600;
   border-radius: var(--radius-sm);
   padding: 0.22rem 0.55rem;
   cursor: pointer; outline: none;
   transition: border-color var(--transition);
   flex-shrink: 0;
+  /* min touch height */
+  min-height: 36px;
 }
 .compress-unit-select:focus { border-color: var(--accent-violet); }
 .compress-unit-select option { background: var(--bg-secondary); color: var(--text-primary); }
@@ -1171,12 +1193,14 @@ select { cursor: pointer; }
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
   padding: 0.65rem 0.8rem;
+  /* minimum 44px height for touch accessibility */
+  min-height: 44px;
   border-radius: var(--radius-md);
   font-size: 0.78rem; font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
   user-select: none;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   text-align: center;
   position: relative;
 }
@@ -1345,7 +1369,8 @@ select { cursor: pointer; }
 .compress-download-name-input {
   flex: 1; min-width: 0; background: transparent; border: none; outline: none;
   color: var(--text-primary); font-family: var(--font-body);
-  font-size: 0.85rem; font-weight: 500;
+  /* font-size >= 16px prevents iOS auto-zoom on focus */
+  font-size: 16px; font-weight: 500;
 }
 .compress-download-name-input::placeholder { color: var(--text-muted); }
 .compress-ext-label { font-size: 0.74rem; color: var(--accent-cyan); font-weight: 700; flex-shrink: 0; }
@@ -1397,12 +1422,58 @@ select { cursor: pointer; }
   .compress-format-row { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* ─── ISSUE 2 FIX: Mobile nav — scrollable pill row instead of hidden ─── */
 @media (max-width: 767px) {
-  .hero-section { padding: 90px 16px 50px; }
+  /* Reposition nav-center-links: remove absolute centering,
+     make it a horizontal scrollable strip below brand row */
+  .glass-nav > .container-fluid {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  /* Nav center becomes full-width scrollable strip on its own row */
+  .nav-center-links {
+    /* Override Bootstrap d-none d-md-flex: always show on mobile */
+    display: flex !important;
+    position: static !important;
+    transform: none !important;
+    order: 3;          /* below brand + right controls */
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 6px 0 8px;
+    /* Hide scrollbar but keep scrollable */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .nav-center-links::-webkit-scrollbar { display: none; }
+
+  /* Slightly larger pill links for fat-finger tapping */
+  .nav-pill-link {
+    min-height: 36px;
+    padding: 0.45rem 1rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Hero */
+  .hero-section { padding: 100px 16px 50px; }
   .hero-title { font-size: 2rem; }
   .hero-subtitle { font-size: 0.88rem; }
-  .hero-actions { gap: 8px; }
-  .btn-primary-glow, .btn-ghost { padding: 0.75rem 1.35rem; font-size: 0.9rem; }
+  /* ISSUE 4 FIX: minimum 8px gap between hero CTA buttons */
+  .hero-actions { gap: 10px; flex-wrap: wrap; }
+
+  .btn-primary-glow, .btn-ghost {
+    padding: 0.75rem 1.35rem;
+    font-size: 0.9rem;
+    /* 44px minimum height for CTA touch targets */
+    min-height: 44px;
+  }
   .dropzone { padding: 2rem 1rem; }
   .dropzone-title { font-size: 1.15rem; }
   .file-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
@@ -1410,23 +1481,109 @@ select { cursor: pointer; }
   .conversion-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .download-card { flex-direction: column; text-align: center; padding: 1.25rem; }
   .download-card-icon { width: 52px; height: 52px; font-size: 1.5rem; align-self: center; }
-  .download-card-actions { flex-direction: row; justify-content: center; min-width: unset; width: 100%; }
-  .btn-download, .btn-new-convert { flex: 1; justify-content: center; font-size: 0.82rem; padding: 0.65rem 0.75rem; }
-  .btn-convert { padding: 0.85rem 1.75rem; font-size: 0.95rem; max-width: 100%; }
+  .download-card-actions { flex-direction: row; justify-content: center; min-width: unset; width: 100%; gap: 10px; }
+  .btn-download, .btn-new-convert {
+    flex: 1; justify-content: center;
+    font-size: 0.82rem;
+    padding: 0.65rem 0.75rem;
+    /* 44px min height */
+    min-height: 44px;
+  }
+  .btn-convert { padding: 0.85rem 1.75rem; font-size: 0.95rem; max-width: 100%; min-height: 44px; }
   .section-header { flex-wrap: wrap; }
-  .custom-name-input { font-size: 0.85rem; }
+  /* font-size 16px on all text inputs to prevent iOS auto-zoom */
+  .custom-name-input { font-size: 16px; }
+  .compress-download-name-input { font-size: 16px; }
+
+  /* ISSUE 4 FIX: SortableJS — prevent drag conflicting with touch scroll */
+  .file-card {
+    touch-action: manipulation;
+  }
+  /* During SortableJS drag (JS adds sortable-chosen), disable touch scroll on that card */
+  .file-card.sortable-chosen {
+    touch-action: none;
+  }
+
+  /* ISSUE 4 FIX: btn-add-more and btn-clear-all — adequate tap sizes */
+  .btn-add-more, .btn-clear-all {
+    min-height: 40px;
+    padding: 0.45rem 0.85rem;
+  }
+
+  /* ISSUE 4 FIX: toast-close gets a bigger tap area */
+  .toast-close {
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
 }
 
 @media (max-width: 600px) {
-  .compress-format-row { grid-template-columns: repeat(2, 1fr); }
-  .compress-chips { gap: 5px; }
-  .compress-chip { padding: 0.22rem 0.62rem; font-size: 0.73rem; }
-  .btn-compress { font-size: 0.92rem; padding: 0.85rem 1.5rem; }
+  .compress-format-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .compress-chips { gap: 6px; }
+
+  /* ISSUE 1 FIX: 44px touch target for compress chips at small breakpoint */
+  .compress-chip {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.73rem;
+    min-height: 44px;
+  }
+
+  /* ISSUE 1 FIX: 44px touch target for format buttons */
+  .compress-fmt-btn {
+    padding: 0.7rem 0.6rem;
+    font-size: 0.72rem;
+    min-height: 44px;
+  }
+  .compress-fmt-btn span { font-size: 0.73rem; }
+  .compress-fmt-btn em { font-size: 0.6rem; }
+  .compress-fmt-btn i { font-size: 1rem; }
+
+  /* ISSUE 1 FIX: compress-file-clear and cmp-change-link tap areas */
+  .compress-file-clear {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  .cmp-change-link {
+    min-height: 36px;
+    padding: 4px 0;
+  }
+
+  .btn-compress { font-size: 0.92rem; padding: 0.9rem 1.5rem; min-height: 48px; }
   .cmp-stats-row { gap: 8px; padding: 0.85rem 1rem 0.75rem; }
   .cmp-stat-val { font-size: 0.9rem; }
   .compress-portal-tags { gap: 5px; }
   .compress-portal-tag { font-size: 0.67rem; padding: 0.18rem 0.6rem; }
-  .nav-center-links { display: none !important; }
+}
+
+/* ISSUE 3 FIX: Compress custom-row stacks at very small screens */
+@media (max-width: 400px) {
+  .compress-custom-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0.55rem 0.75rem;
+  }
+  /* Label stays inline, shrinks slightly */
+  .compress-custom-row label {
+    font-size: 0.72rem;
+    flex: 0 0 auto;
+  }
+  /* Input + dropdown take full width on second line */
+  .compress-custom-input {
+    /* Reset text-align for better UX when full-width */
+    text-align: left;
+    flex: 1 1 80px;
+    min-width: 60px;
+  }
+  .compress-unit-select {
+    flex-shrink: 0;
+    /* Ensure dropdown is never cut off */
+    min-width: 56px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1451,6 +1608,12 @@ select { cursor: pointer; }
 @media (max-width: 360px) {
   .file-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-title { font-size: 1.55rem; }
+  /* Extra tight: ensure chips don't overflow */
+  .compress-chips { gap: 4px; }
+  .compress-chip { padding: 0.5rem 0.55rem; font-size: 0.7rem; }
+  /* Stack hero actions fully on very small screens */
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .btn-primary-glow, .btn-ghost { text-align: center; justify-content: center; }
 }
 
 /* ============================================================
