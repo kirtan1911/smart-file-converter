@@ -4,14 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart File Converter</title>
+  <title>SmartConvert — File Converter &amp; Image Compressor</title>
+  <meta name="description" content="Convert PDF, DOCX, JPG, PNG, WebP files instantly. Compress images to exact KB sizes for government portals — passport seva, income tax, exam forms." />
 
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css" />
 </head>
@@ -25,6 +26,18 @@
         <div class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></div>
         <span class="brand-name">SmartConvert</span>
       </a>
+
+      <!-- Center nav links -->
+      <div class="nav-center-links d-none d-md-flex">
+        <a class="nav-pill-link" href="#dropzone">
+          <i class="bi bi-arrow-left-right me-1"></i>Convert
+        </a>
+        <a class="nav-pill-link nav-pill-link--violet" href="#compressSection">
+          <i class="bi bi-arrows-collapse me-1"></i>Compress
+          <span class="nav-new-dot"></span>
+        </a>
+      </div>
+
       <div class="d-flex align-items-center gap-2">
         <span class="badge-pill" id="fileCountBadge" style="display:none !important;">
           <i class="bi bi-file-earmark-fill"></i>
@@ -40,26 +53,54 @@
   <!-- ═══════════════════ HERO ═══════════════════ -->
   <section class="hero-section">
     <div class="hero-bg-mesh"></div>
+    <!-- Floating orbs -->
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
     <div class="container text-center position-relative z-2">
       <div class="hero-badge mb-3 animate-fade-up" style="animation-delay:0.1s">
         <i class="bi bi-stars"></i>
         Supports PDF · DOCX · JPG · PNG · WebP
       </div>
       <h1 class="hero-title animate-fade-up" style="animation-delay:0.2s">
-        Convert Any File,<br />
-        <span class="text-gradient">Instantly.</span>
+        Convert &amp; Compress<br />
+        <span class="text-gradient">Any File, Instantly.</span>
       </h1>
       <p class="hero-subtitle animate-fade-up" style="animation-delay:0.35s">
-        Drag, drop, arrange, and convert — all in the browser.<br class="d-none d-md-block"/>
-        No signup. Upload up to 100 files (100MB each). Files auto-deleted after 15 minutes.
+        Drag, drop, and convert — no signup, no limits.<br class="d-none d-md-block"/>
+        New: <strong style="color:var(--accent-primary);">Compress to exact KB</strong> for government portals.
       </p>
       <div class="hero-actions animate-fade-up" style="animation-delay:0.5s">
-        <button class="btn btn-primary-glow" onclick="document.getElementById('dropzone').scrollIntoView({behavior:'smooth'})">
+        <button class="btn btn-primary-glow" onclick="document.getElementById('compressSection').scrollIntoView({behavior:'smooth'})">
+          <i class="bi bi-arrows-collapse me-2"></i>Compress Image
+        </button>
+        <button class="btn btn-ghost" onclick="document.getElementById('dropzone').scrollIntoView({behavior:'smooth'})">
           <i class="bi bi-cloud-upload-fill me-2"></i>Start Converting
         </button>
-        <button class="btn btn-ghost" onclick="document.getElementById('howItWorks').scrollIntoView({behavior:'smooth'})">
-          How it works <i class="bi bi-arrow-down ms-1"></i>
-        </button>
+      </div>
+
+      <!-- Stats row -->
+      <div class="hero-stats animate-fade-up" style="animation-delay:0.65s">
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="mono">100+</span></div>
+          <div class="hero-stat-label">Files at once</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="mono">100MB</span></div>
+          <div class="hero-stat-label">Per file</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="mono">15 min</span></div>
+          <div class="hero-stat-label">Auto-delete</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value"><span class="mono">±3%</span></div>
+          <div class="hero-stat-label">Size accuracy</div>
+        </div>
       </div>
     </div>
   </section>
@@ -73,15 +114,15 @@
             <div class="step-number">01</div>
             <div class="step-icon"><i class="bi bi-cloud-upload"></i></div>
             <h5>Upload Files</h5>
-            <p>Drag & drop or click to upload. Supports images, PDFs, and DOCX up to 100MB each.</p>
+            <p>Drag &amp; drop or click to upload. Supports images, PDFs, and DOCX up to 100MB each.</p>
           </div>
         </div>
         <div class="col-sm-6 col-md-4">
           <div class="step-card animate-fade-up" style="animation-delay:0.25s">
             <div class="step-number">02</div>
             <div class="step-icon"><i class="bi bi-sliders"></i></div>
-            <h5>Choose Format</h5>
-            <p>Select your conversion type. Reorder images before merging into a PDF.</p>
+            <h5>Choose Action</h5>
+            <p>Convert between formats or compress to an exact size. Set target KB for gov portals.</p>
           </div>
         </div>
         <div class="col-sm-6 col-md-4">
@@ -89,7 +130,7 @@
             <div class="step-number">03</div>
             <div class="step-icon"><i class="bi bi-download"></i></div>
             <h5>Download</h5>
-            <p>Instantly download your converted file with a custom name. Auto-deleted for privacy.</p>
+            <p>Instantly download your file with a custom name. Auto-deleted after 15 min for privacy.</p>
           </div>
         </div>
       </div>
@@ -230,13 +271,315 @@
     </div>
   </section>
 
+  <!-- ═══════════════════ SECTION DIVIDER ═══════════════════ -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-badge">
+      <i class="bi bi-arrows-collapse me-2"></i>Image Compressor
+    </div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <!-- ═══════════════════ COMPRESS IMAGE MODULE ═══════════════════ -->
+  <section class="compress-section py-5" id="compressSection">
+    <div class="compress-section-bg"></div>
+    <div class="container position-relative">
+
+      <!-- Section intro -->
+      <div class="compress-intro animate-fade-up" style="animation-delay:0.05s">
+        <span class="compress-intro-badge">
+          <i class="bi bi-stars me-1"></i>New Feature
+        </span>
+        <h2 class="compress-intro-title">
+          Compress to <span class="text-gradient">Exact Size</span>
+        </h2>
+        <p class="compress-intro-desc">
+          Hit strict KB limits for Indian government portals in one click. Binary-search algorithm achieves ±3% accuracy.
+        </p>
+
+        <!-- Portal hint tags -->
+        <div class="compress-portal-tags">
+          <span class="compress-portal-tag"><i class="bi bi-building me-1"></i>Passport Seva · 50 KB</span>
+          <span class="compress-portal-tag"><i class="bi bi-building me-1"></i>Income Tax · 100 KB</span>
+          <span class="compress-portal-tag"><i class="bi bi-building me-1"></i>Exam Forms · 20–200 KB</span>
+          <span class="compress-portal-tag"><i class="bi bi-building me-1"></i>Bank KYC · 200 KB</span>
+          <span class="compress-portal-tag"><i class="bi bi-building me-1"></i>University · 500 KB</span>
+        </div>
+      </div>
+
+      <!-- 2-column layout -->
+      <div class="compress-layout animate-fade-up" style="animation-delay:0.15s">
+
+        <!-- ── LEFT: Step-by-step controls ── -->
+        <div class="compress-controls-col">
+
+          <!-- Step 1: Upload -->
+          <div class="cmp-step-card" id="cmpStepUpload">
+            <div class="cmp-step-header">
+              <div class="cmp-step-num">01</div>
+              <div class="cmp-step-info">
+                <div class="cmp-step-title">Upload Image</div>
+                <div class="cmp-step-hint">JPG, PNG, WebP — max 25 MB</div>
+              </div>
+            </div>
+
+            <!-- Drop zone -->
+            <div class="compress-dropzone" id="cmpDropzone">
+              <input type="file" id="cmpFileInput" accept=".jpg,.jpeg,.png,.webp" class="d-none" />
+              <div class="compress-drop-overlay" id="cmpDropOverlay">
+                <i class="bi bi-plus-circle-fill" style="font-size:2rem;"></i>
+                <span>Drop to upload</span>
+              </div>
+              <div class="cmp-drop-icon-ring">
+                <div class="compress-drop-icon"><i class="bi bi-image"></i></div>
+              </div>
+              <p class="compress-drop-title">Drop your image here</p>
+              <p class="compress-drop-sub">
+                or <label for="cmpFileInput" class="browse-link" style="color:var(--accent-violet);">browse files</label>
+              </p>
+              <div class="cmp-drop-fmts">
+                <span class="cmp-drop-fmt">JPG</span>
+                <span class="cmp-drop-fmt">PNG</span>
+                <span class="cmp-drop-fmt">WebP</span>
+              </div>
+            </div>
+
+            <!-- File info strip (shown after upload) -->
+            <div class="compress-file-info" id="cmpFileInfo" style="display:none;">
+              <div class="cmp-thumb-wrap">
+                <img class="compress-file-thumb" id="cmpThumb" src="" alt="preview" />
+                <div class="cmp-thumb-check"><i class="bi bi-check-lg"></i></div>
+              </div>
+              <div class="compress-file-meta">
+                <div class="compress-file-name" id="cmpFileName">photo.jpg</div>
+                <div class="compress-file-size" id="cmpFileSize">Original: —</div>
+                <label for="cmpFileInput" class="cmp-change-link">
+                  <i class="bi bi-arrow-repeat me-1"></i>Change image
+                </label>
+              </div>
+              <button class="compress-file-clear" id="cmpFileClear" title="Remove">
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </div>
+          </div>
+          <!-- /Step 1 -->
+
+          <!-- Steps 2 & 3 (shown after file picked) -->
+          <div id="cmpControlsWrap" style="display:none;">
+
+            <!-- Connector line -->
+            <div class="cmp-connector"></div>
+
+            <!-- Step 2: Target Size -->
+            <div class="cmp-step-card">
+              <div class="cmp-step-header">
+                <div class="cmp-step-num">02</div>
+                <div class="cmp-step-info">
+                  <div class="cmp-step-title">Target Size</div>
+                  <div class="cmp-step-hint">Pick a preset or enter custom value</div>
+                </div>
+              </div>
+
+              <div class="compress-chips" id="cmpChips">
+                <button class="compress-chip" data-kb="20">20 KB</button>
+                <button class="compress-chip" data-kb="50">50 KB</button>
+                <button class="compress-chip" data-kb="100">100 KB</button>
+                <button class="compress-chip" data-kb="200">200 KB</button>
+                <button class="compress-chip" data-kb="500">500 KB</button>
+                <button class="compress-chip" data-kb="1024">1 MB</button>
+              </div>
+
+              <div class="compress-custom-row">
+                <label for="cmpCustomSize"><i class="bi bi-pencil me-1" style="color:var(--accent-violet);"></i>Custom</label>
+                <input type="number" id="cmpCustomSize" class="compress-custom-input" placeholder="e.g. 35" min="1" step="1" autocomplete="off" />
+                <select id="cmpUnit" class="compress-unit-select">
+                  <option value="KB">KB</option>
+                  <option value="MB">MB</option>
+                </select>
+              </div>
+
+              <div class="compress-validation-hint" id="cmpValidationHint"></div>
+            </div>
+            <!-- /Step 2 -->
+
+            <div class="cmp-connector"></div>
+
+            <!-- Step 3: Output Format -->
+            <div class="cmp-step-card">
+              <div class="cmp-step-header">
+                <div class="cmp-step-num">03</div>
+                <div class="cmp-step-info">
+                  <div class="cmp-step-title">Output Format</div>
+                  <div class="cmp-step-hint">JPG gives smallest file for photos</div>
+                </div>
+              </div>
+
+              <div class="compress-format-row" id="cmpFormatRow">
+                <button class="compress-fmt-btn active" data-fmt="original" id="cmpFmtOriginal">
+                  <i class="bi bi-file-earmark"></i>
+                  <span>Keep Original</span>
+                </button>
+                <button class="compress-fmt-btn" data-fmt="jpeg" id="cmpFmtJpeg">
+                  <i class="bi bi-file-earmark-image"></i>
+                  <span>JPG</span>
+                  <em>Photos</em>
+                </button>
+                <button class="compress-fmt-btn" data-fmt="png" id="cmpFmtPng">
+                  <i class="bi bi-file-earmark-image"></i>
+                  <span>PNG</span>
+                  <em>Lossless</em>
+                </button>
+                <button class="compress-fmt-btn" data-fmt="webp" id="cmpFmtWebp">
+                  <i class="bi bi-file-earmark-image"></i>
+                  <span>WebP</span>
+                  <em>Smallest</em>
+                </button>
+              </div>
+            </div>
+            <!-- /Step 3 -->
+
+            <!-- Compress button -->
+            <button class="btn-compress" id="cmpBtn" disabled>
+              <span class="btn-text">
+                <i class="bi bi-arrows-collapse me-2"></i>Compress Now
+              </span>
+              <span class="btn-loader d-none">
+                <span class="spinner-border spinner-border-sm me-2"></span>Compressing…
+              </span>
+            </button>
+
+          </div>
+          <!-- /cmpControlsWrap -->
+
+        </div>
+        <!-- /compress-controls-col -->
+
+        <!-- ── RIGHT: Live Preview / Result ── -->
+        <div class="compress-preview-col">
+
+          <!-- Empty state -->
+          <div class="cmp-empty-state" id="cmpEmptyState">
+            <div class="cmp-empty-icon-wrap">
+              <div class="cmp-empty-icon"><i class="bi bi-image-alt"></i></div>
+              <div class="cmp-empty-ring cmp-ring-1"></div>
+              <div class="cmp-empty-ring cmp-ring-2"></div>
+              <div class="cmp-empty-ring cmp-ring-3"></div>
+            </div>
+            <h5 class="cmp-empty-title">Result will appear here</h5>
+            <p class="cmp-empty-desc">Upload an image and choose a target size to see the compressed result instantly.</p>
+            <div class="cmp-empty-steps">
+              <div class="cmp-empty-step">
+                <i class="bi bi-upload"></i>Upload
+              </div>
+              <div class="cmp-empty-arrow"><i class="bi bi-arrow-right"></i></div>
+              <div class="cmp-empty-step">
+                <i class="bi bi-sliders"></i>Target
+              </div>
+              <div class="cmp-empty-arrow"><i class="bi bi-arrow-right"></i></div>
+              <div class="cmp-empty-step">
+                <i class="bi bi-download"></i>Download
+              </div>
+            </div>
+            <div class="cmp-empty-badges">
+              <div class="cmp-accuracy-badge">
+                <i class="bi bi-bullseye me-1"></i>±3% accuracy
+              </div>
+              <div class="cmp-accuracy-badge">
+                <i class="bi bi-shield-check me-1"></i>Aspect ratio preserved
+              </div>
+            </div>
+          </div>
+
+          <!-- Result card (shown after compression) -->
+          <div class="compress-result-card" id="cmpResultCard" style="display:none;">
+
+            <!-- Preview image with overlay badge -->
+            <div class="cmp-result-preview">
+              <img class="cmp-result-img" id="cmpPreviewImg" src="" alt="Compressed preview" />
+              <div class="cmp-result-overlay-badge" id="cmpReductionBadge">
+                <i class="bi bi-arrow-down-circle-fill me-1"></i>
+                <span id="cmpReductionPct">—</span>
+              </div>
+            </div>
+
+            <!-- Before / After stats -->
+            <div class="cmp-stats-row">
+              <div class="cmp-stat-box">
+                <div class="cmp-stat-label">Before</div>
+                <div class="cmp-stat-val cmp-stat-before" id="cmpStatOrig">—</div>
+              </div>
+              <div class="cmp-stat-arrow">
+                <i class="bi bi-arrow-right-circle-fill"></i>
+              </div>
+              <div class="cmp-stat-box cmp-stat-box--after">
+                <div class="cmp-stat-label">After</div>
+                <div class="cmp-stat-val cmp-stat-after" id="cmpStatNew">—</div>
+              </div>
+            </div>
+
+            <!-- Visual compression bar -->
+            <div class="cmp-bar-section">
+              <div class="cmp-bar-track">
+                <div class="cmp-bar-fill" id="cmpBarFill" style="width:100%;"></div>
+              </div>
+              <div class="cmp-bar-labels">
+                <span>0</span>
+                <span style="color:var(--accent-violet);font-weight:700;" id="cmpBarMiddle"></span>
+                <span>Original</span>
+              </div>
+            </div>
+
+            <!-- Note (closest achievable) -->
+            <div class="compress-note" id="cmpNote">
+              <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+              <span id="cmpNoteText"></span>
+            </div>
+
+            <!-- Download section -->
+            <div class="cmp-download-box">
+              <div class="compress-download-name-wrap">
+                <i class="bi bi-file-earmark-image compress-download-name-icon"></i>
+                <input
+                  type="text"
+                  id="cmpDownloadName"
+                  class="compress-download-name-input"
+                  placeholder="filename"
+                  maxlength="80"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <span class="compress-ext-label" id="cmpExtLabel">.jpg</span>
+              </div>
+              <div class="cmp-download-actions">
+                <button class="btn-compress-download" id="cmpDownloadBtn">
+                  <i class="bi bi-download me-2"></i>Download
+                </button>
+                <button class="btn-compress-again" id="cmpAgainBtn">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i>Again
+                </button>
+              </div>
+            </div>
+
+          </div>
+          <!-- /cmpResultCard -->
+
+        </div>
+        <!-- /compress-preview-col -->
+
+      </div>
+      <!-- /compress-layout -->
+
+    </div>
+  </section>
+  <!-- /COMPRESS IMAGE MODULE -->
+
   <!-- ═══════════════════ FOOTER ═══════════════════ -->
   <footer class="app-footer py-4 text-center">
     <p class="mb-1">
       <i class="bi bi-shield-lock-fill me-1"></i>
       Files are automatically deleted 15 minutes after conversion.
     </p>
-    <p class="footer-copy">Built with Node.js, Express &amp; pdf-lib · Smart File Converter © 2025</p>
+    <p class="footer-copy">Built with Node.js, Express &amp; sharp · SmartConvert © 2025</p>
   </footer>
 
   <!-- TOAST CONTAINER -->
@@ -246,5 +589,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script src="/js/app.js"></script>
+  <script src="/js/compress.js"></script>
 </body>
 </html>

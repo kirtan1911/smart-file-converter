@@ -40,6 +40,7 @@ ensureTempDirs();
 const uploadRouter   = require('./routes/upload');
 const convertRouter  = require('./routes/convert');
 const downloadRouter = require('./routes/download');
+const compressRouter = require('./routes/compress');
 const { cleanupOldFiles } = require('./utils/cleanup');
 
 // ── App ───────────────────────────────────────────────────────
@@ -122,9 +123,10 @@ app.use('/uploads',  express.static(UPLOADS_DIR));
 app.use('/converted', express.static(CONVERTED_DIR));
 
 // ── API routes ────────────────────────────────────────────────
-app.use('/upload',   uploadRouter);
-app.use('/convert',  convertRouter);
-app.use('/download', downloadRouter);
+app.use('/upload',            uploadRouter);
+app.use('/convert',           convertRouter);
+app.use('/download',          downloadRouter);
+app.use('/api/compress-image', compressRouter);
 
 // ── Health check ──────────────────────────────────────────────
 // WHY: Render pings this endpoint. If it returns non-2xx,
@@ -234,7 +236,7 @@ const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🌍 Port:       ${PORT}`);
   console.log(`📁 Uploads:    ${UPLOADS_DIR}`);
   console.log(`📁 Converted:  ${CONVERTED_DIR}`);
-  console.log(`🔗 URL:        http://0.0.0.0:${PORT}`);
+  console.log(`🔗 URL:        http://localhost:${PORT}`);
   console.log(`📦 Node:       ${process.version}`);
   console.log(`🌱 Env:        ${process.env.NODE_ENV || 'development'}`);
   console.log('═══════════════════════════════════════\n');
