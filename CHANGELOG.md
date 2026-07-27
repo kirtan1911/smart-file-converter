@@ -4,6 +4,114 @@ All notable changes and bug fixes made to this project are documented here.
 
 ---
 
+## [1.2.0] - 2026-07-27
+
+### 📱 Mobile UX — Touch Accessibility & Responsive Polish
+
+CSS-only release (`public/css/style.css`). No changes to desktop layout, JavaScript logic, or backend.
+
+---
+
+### Fix 1 — Touch Target Sizes (Issue 1)
+
+**Problem:**
+`.compress-chip` (20 KB / 50 KB / 100 KB preset pills) and `.compress-fmt-btn`
+(Keep Original / JPG / PNG / WebP) shrank to ~32px height at `max-width: 600px`,
+well below the 44px minimum recommended by Apple HIG and Google Material guidelines.
+Several icon-only buttons (file-card remove, custom-name clear, compress-file-clear,
+theme-toggle, toast-close) also had no explicit tap size.
+
+**Fix Applied:**
+| Element | Before | After |
+|---|---|---|
+| `.theme-toggle` | 36×36px | **44×44px** (always) |
+| `.compress-chip` | ~32px height at ≤600px | `min-height: 44px` at ≤600px |
+| `.compress-fmt-btn` | no min-height | `min-height: 44px` (base + ≤600px) |
+| `.compress-file-clear` | 4px padding | `padding: 10px`, `min: 44×44px` |
+| `.custom-name-clear` | 0 padding | `padding: 10px 6px`, `min: 44×44px` |
+| `.btn-primary-glow` / `.btn-ghost` | no min-height | `min-height: 44px` at ≤767px |
+| `.btn-download` / `.btn-new-convert` | no min-height | `min-height: 44px` at ≤767px |
+| `.btn-convert` | no min-height | `min-height: 44px` at ≤767px |
+| `.file-card-remove` | opacity 0 on mobile | always visible via `@media (hover: none)` |
+| `.toast-close` | small icon | `min: 36×36px` + `padding: 6px` |
+| `.btn-add-more` / `.btn-clear-all` | small | `min-height: 40px` |
+
+**Files Changed:** `public/css/style.css`
+
+---
+
+### Fix 2 — Nav Center Links Hidden on Mobile (Issue 2)
+
+**Problem:**
+`.nav-center-links` was set to `display: none !important` inside `@media (max-width: 600px)`,
+making the Convert and Compress navigation tabs completely inaccessible to mobile users
+unless they scrolled the entire page manually.
+
+**Fix Applied:**
+- Removed the `display: none !important` rule.
+- At `max-width: 767px`, `.nav-center-links` is repositioned from absolute-centred to
+  a **full-width third row** in the navbar (Bootstrap flex container gets `flex-wrap: wrap`,
+  the pill row gets `order: 3`).
+- The row becomes **horizontally scrollable** (`overflow-x: auto`, hidden scrollbar,
+  `-webkit-overflow-scrolling: touch`) so users can swipe to reach both tabs.
+- `.nav-pill-link` gets `min-height: 36px` and larger padding for comfortable tapping.
+- Verified at 375px: both Convert (anchor `#dropzone`) and Compress (anchor `#compressSection`)
+  links are tappable from the navbar without scrolling.
+
+**Files Changed:** `public/css/style.css`
+
+---
+
+### Fix 3 — Custom Size Input Row Cramped on Small Screens (Issue 3)
+
+**Problem:**
+`.compress-custom-row` packed a label + number input + KB/MB dropdown into a single flex row.
+On 360px-wide devices the row felt cramped and the dropdown could overflow.
+
+**Fix Applied:**
+At `max-width: 400px`:
+- `.compress-custom-row` gets `flex-wrap: wrap` — the row can wrap to two lines.
+- The label remains inline (font-size scaled down slightly to `0.72rem`).
+- The input gets `flex: 1 1 80px; min-width: 60px; text-align: left`.
+- The dropdown gets `min-width: 56px; flex-shrink: 0` to prevent cut-off.
+
+**Files Changed:** `public/css/style.css`
+
+---
+
+### Fix 4 — General Mobile Polish (Issue 4)
+
+**iOS Auto-Zoom Prevention:**
+All text inputs and selects now use `font-size: 16px` at the base (not just at a breakpoint),
+which prevents iOS Safari from zooming the viewport on focus:
+- `.compress-custom-input` — `font-size: 16px`
+- `.compress-unit-select` — `font-size: 16px`
+- `.custom-name-input` — `font-size: 16px`
+- `.compress-download-name-input` — `font-size: 16px`
+
+**SortableJS Touch Scroll Conflict:**
+At `max-width: 767px`:
+- `.file-card` → `touch-action: manipulation` (allows normal scroll, prevents double-tap zoom)
+- `.file-card.sortable-chosen` → `touch-action: none` (locks touch to drag when SortableJS is active)
+
+**Spacing Audit:**
+- `.hero-actions` gap increased from `8px` to `10px`.
+- `.download-card-actions` gap added (`10px`).
+- `.compress-chips` gap set to `6px` at ≤600px, `4px` at ≤360px.
+- At ≤360px, hero action buttons stack vertically (`flex-direction: column`) for very narrow devices.
+
+**Files Changed:** `public/css/style.css`
+
+---
+
+### Files Modified Summary
+
+| File | What Changed |
+|------|-------------|
+| `public/css/style.css` | All four mobile UX issues fixed; +185 lines across responsive breakpoints |
+
+---
+
 ## [1.1.0] - 2026-07-26
 
 ### 🚨 Critical Bug Fixes (Render.com Deployment)

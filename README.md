@@ -9,7 +9,7 @@ A modern, production-ready file converter web application built with Node.js, Ex
 | Feature | Status |
 |---|---|
 | Drag & Drop Upload | ✅ |
-| Multiple File Upload (up to 20) | ✅ |
+| Multiple File Upload (up to 100) | ✅ |
 | Images → PDF | ✅ |
 | PDF → DOCX | ✅ |
 | DOCX → PDF | ✅ |
@@ -24,8 +24,25 @@ A modern, production-ready file converter web application built with Node.js, Ex
 | File Size Limit (100MB) | ✅ |
 | Auto-Delete Temp Files (15min) | ✅ |
 | Dark / Light Mode | ✅ |
-| Mobile Responsive | ✅ |
+| **Compress Image to Exact KB/MB** | ✅ |
+| **Mobile Responsive (Touch-Optimised)** | ✅ |
 | Error Handling | ✅ |
+
+---
+
+## 📱 Mobile UX
+
+SmartConvert is fully optimised for mobile browsers (tested at 375px iPhone SE and 360px Android):
+
+| UX Concern | Implementation |
+|---|---|
+| Touch targets | All tappable elements ≥ 44×44px (Apple/Google guideline) |
+| iOS auto-zoom prevention | All `<input>` and `<select>` elements use `font-size: 16px` |
+| Nav tabs on mobile | Convert/Compress tabs scroll horizontally — never hidden |
+| Drag-to-reorder (SortableJS) | `touch-action: manipulation` on cards; `touch-action: none` during active drag |
+| Fat-finger spacing | Minimum 8px gap between all adjacent tappable elements |
+| Small-screen custom size row | Stacks to two lines at ≤ 400px viewport width |
+| File remove button | Always visible on touch devices (`@media (hover: none)`) |
 
 ---
 
@@ -36,22 +53,27 @@ smart-file-converter/
 ├── public/                   # Frontend static files
 │   ├── index.html            # Main HTML (UI)
 │   ├── css/
-│   │   └── style.css         # Glassmorphism dark/light CSS
+│   │   └── style.css         # Glassmorphism dark/light CSS (mobile-optimised)
 │   └── js/
-│       └── app.js            # Frontend logic
+│       ├── app.js            # Convert module frontend logic
+│       └── compress.js       # Compress module frontend logic
 ├── routes/                   # Express route handlers
 │   ├── upload.js             # POST /upload
 │   ├── convert.js            # POST /convert
+│   ├── compress.js           # POST /api/compress-image
 │   └── download.js           # GET /download/:id
 ├── utils/                    # Shared utility modules
 │   ├── fileValidator.js      # Magic byte validation
 │   ├── pdfUtils.js           # PDF operations (repair, merge, convert)
 │   ├── imageUtils.js         # Image recovery, DOCX embedding
+│   ├── tempDir.js            # Centralised writable temp directory
 │   └── cleanup.js            # Auto-delete temp files
 ├── uploads/                  # Temporary uploaded files (auto-cleaned)
 ├── converted/                # Temporary converted output (auto-cleaned)
 ├── server.js                 # Express entry point
 ├── package.json
+├── Dockerfile
+├── render.yaml
 └── README.md
 ```
 
@@ -60,13 +82,13 @@ smart-file-converter/
 ## ⚡ Quick Start (Local)
 
 ### Prerequisites
-- **Node.js v16+** — https://nodejs.org
+- **Node.js v18+** — https://nodejs.org
 - **npm** (comes with Node.js)
 - Optional: **LibreOffice** (for best DOCX→PDF quality)
 
 ### 1. Clone / Download
 ```bash
-git clone https://github.com/yourname/smart-file-converter.git
+git clone https://github.com/kirtan1911/smart-file-converter.git
 cd smart-file-converter
 ```
 
@@ -139,8 +161,6 @@ files: [File, File, ...]
 }
 ```
 
----
-
 ### `POST /convert`
 Convert uploaded files.
 
@@ -155,26 +175,25 @@ Convert uploaded files.
 }
 ```
 
-**Types:**
-| type | Description |
-|---|---|
-| `images-to-pdf` | Merge images into one PDF |
-| `pdf-to-docx`   | PDF → Word document |
-| `docx-to-pdf`   | Word → PDF |
-| `images-to-docx`| Images embedded into DOCX |
+### `POST /api/compress-image`
+Compress an image to a target file size.
 
-**Response:**
-```json
-{
-  "success": true,
-  "downloadId": "merged_1718000000_def456.pdf",
-  "downloadName": "converted_images.pdf",
-  "fileSize": 524288,
-  "warnings": []
-}
+**Form Data:**
+```
+image:        File          (JPG / PNG / WebP, max 25 MB)
+targetSize:   number        (e.g. 50)
+unit:         "KB" | "MB"
+outputFormat: "original" | "jpeg" | "png" | "webp"
 ```
 
----
+**Response:** Binary image stream with headers:
+```
+X-Compress-ActualBytes    — resulting file size in bytes
+X-Compress-OriginalBytes  — original file size in bytes
+X-Compress-WasExact       — "1" if target was hit exactly
+X-Compress-Extension      — output extension (.jpg / .png / .webp)
+X-Compress-Note           — warning if target was unreachable
+```
 
 ### `GET /download/:downloadId?name=filename.pdf`
 Stream the converted file for download.
@@ -196,21 +215,18 @@ Stream the converted file for download.
 
 ## 🌍 Deployment
 
-### Option A: Render.com (Free Tier)
+### Option A: Render.com (Docker — Recommended)
 
 1. Push your project to GitHub
 2. Go to [render.com](https://render.com) → **New Web Service**
 3. Connect your GitHub repo
 4. Settings:
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-   - **Environment:** Node
+   - **Runtime:** Docker
+   - **Environment:** `NODE_ENV=production`
 5. Click **Deploy**
-6. URL: https://smart-file-converter-45kw.onrender.com/
+6. Live URL: https://smart-file-converter-45kw.onrender.com/
 
-> ⚠️ Note: Free Render instances sleep after 15min inactivity.
-
----
+> ⚠️ Note: Free Render instances sleep after 15min inactivity. Upgrade to `starter` plan for always-on.
 
 ### Option B: Railway.app
 
@@ -221,13 +237,11 @@ railway init
 railway up
 ```
 
----
-
 ### Option C: VPS / DigitalOcean
 
 ```bash
 # On your server:
-git clone https://github.com/yourname/smart-file-converter.git
+git clone https://github.com/kirtan1911/smart-file-converter.git
 cd smart-file-converter
 npm install
 
@@ -244,12 +258,13 @@ pm2 startup
 
 | Problem | Solution |
 |---|---|
-| `sharp` install fails | Run `npm rebuild sharp` or check Node version ≥16 |
+| `sharp` install fails | Run `npm rebuild sharp` or check Node version ≥18 |
 | `DOCX→PDF` looks plain | Install LibreOffice: `sudo apt install libreoffice` |
 | Upload fails 413 error | Express body limit hit; check `express.json` limit in `server.js` |
 | Port 3000 already in use | Change `PORT` in server.js or set `PORT=3001 npm start` |
 | Files not deleting | Check write permissions on `uploads/` and `converted/` folders |
 | `Cannot find module` | Run `npm install` again |
+| Compress fails on Render | Ensure sharp rebuilt for Linux: `npm rebuild sharp` in Dockerfile |
 
 ---
 
@@ -263,7 +278,7 @@ pm2 startup
 | `pdfkit` | PDF generation from text |
 | `mammoth` | DOCX text extraction |
 | `docx` | DOCX file creation |
-| `sharp` | Image processing & recovery |
+| `sharp` | Image processing, compression & recovery |
 | `libreoffice-convert` | High-quality DOCX↔PDF |
 | `file-type` | Magic byte file validation |
 | `fs-extra` | Enhanced file system operations |
@@ -277,4 +292,4 @@ MIT — Use freely for personal and commercial projects.
 
 ---
 
-Built with ❤️ by Smart File Converter
+Built with ❤️ by [Kirtan Barot](https://github.com/kirtan1911)
